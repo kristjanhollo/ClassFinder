@@ -1,26 +1,24 @@
 package util;
 
 public class FullName implements Comparable<FullName> {
-    public final String packageName;
-    public final String className;
+    private final String packageName;
+    private final String className;
+
 
     public FullName(String fullClassName) {
-        int pos = fullClassName.lastIndexOf(".");
-        if (pos == -1) {
+        int indexOfLastDOt = fullClassName.lastIndexOf(".");
+        if (indexOfLastDOt == -1) {
             packageName = "";
             className = fullClassName;
         } else {
-            packageName = fullClassName.substring(0, pos);
-            className = fullClassName.substring(pos + 1);
+            packageName = fullClassName.substring(0, indexOfLastDOt);
+            className = fullClassName.substring(indexOfLastDOt + 1);
         }
     }
 
     @Override
     public String toString() {
-        if (packageName.length() > 0)
-            return String.format("%s.%s", packageName, className);
-        else
-            return className;
+        return packageName.length() > 0 ? String.format("%s.%s", packageName, className) : className;
     }
 
     @Override
