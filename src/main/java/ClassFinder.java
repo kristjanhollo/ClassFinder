@@ -13,7 +13,10 @@ import static java.lang.Character.isUpperCase;
 public class ClassFinder {
     public static void main(String... args) {
 
-
+        if(args[1].startsWith(" ") || args[1].length() == 0) {
+            System.out.println("./class-finder <filename> '<pattern>'");
+            System.exit(0);
+        }
 
         try (Stream<String> classNameStream = Files.lines(Paths.get(args[0]))) {
 
@@ -25,7 +28,7 @@ public class ClassFinder {
                     .forEach(System.out::println);
 
         } catch (Exception exception) {
-            System.out.println("Wrong input: " + exception.getMessage());
+            System.out.println("./class-finder <filename> '<pattern>'");
         }
     }
 
@@ -80,9 +83,9 @@ public class ClassFinder {
         return word;
     }
 
-    static boolean isLowerCase(String template) {
-        for (char ch : template.toCharArray()) {
-            if (!Character.isLowerCase(ch)) {
+    static boolean isLowerCase(String word) {
+        for (char character : word.toCharArray()) {
+            if (!Character.isLowerCase(character)) {
                 return false;
             }
         }
