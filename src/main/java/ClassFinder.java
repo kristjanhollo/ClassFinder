@@ -15,9 +15,9 @@ public class ClassFinder {
 
         try (Stream<String> stream = Files.lines(Paths.get(args[0]))) {
 
-            String finalWildCard = addAddWildCards(args[1]);
+            String finalWildCard = addWildCards(args[1]);
 
-            stream.filter(e -> matchList(finalWildCard, e)).
+            stream.filter(e -> isMatch(finalWildCard, e)).
                     map(FullName::new).sorted().
                     forEach(System.out::println);
 
@@ -27,20 +27,20 @@ public class ClassFinder {
         }
     }
 
-    static boolean matchList(String finalPattern, String fileInput) {
-        if (finalPattern.endsWith(" ") && matchingPatternAndLastWord(finalPattern, fileInput)) {
+    static boolean isMatch(String finalPattern, String fileInput) {
+        if (finalPattern.endsWith(" ") && isMatchingPatternAndLastWord(finalPattern, fileInput)) {
             return true;
         }
-        return matchingPattern(finalPattern, fileInput);
+        return isMatchingPattern(finalPattern, fileInput);
     }
 
-    static boolean matchingPatternAndLastWord(String finalPattern, String inputWord) {
+    static boolean isMatchingPatternAndLastWord(String finalPattern, String inputWord) {
         Pattern pattern = Pattern.compile(finalPattern.trim());
         Matcher matcher = pattern.matcher(inputWord);
         return matcher.find() && checkIfLastWordInMatch(finalPattern, inputWord);
     }
 
-    static boolean matchingPattern(String finalPattern, String inputWord) {
+    static boolean isMatchingPattern(String finalPattern, String inputWord) {
         Pattern pattern = Pattern.compile(finalPattern);
         Matcher matcher = pattern.matcher(inputWord);
         return matcher.find();
@@ -54,7 +54,7 @@ public class ClassFinder {
         return list;
     }
 
-    static String addAddWildCards(String pattern) {
+    static String addWildCards(String pattern) {
         String placeHolder = pattern.replaceAll("[*]", ".");
         StringBuilder stringBuilder = new StringBuilder();
         String[] placeHolderArray = splitPatternByCapitalLetters(placeHolder);
