@@ -13,51 +13,50 @@ import static java.lang.Character.isUpperCase;
 public class ClassFinder {
     public static void main(String... args) {
 
-        try (Stream<String> stream = Files.lines(Paths.get(args[0]))) {
+
+
+        try (Stream<String> classNameStream = Files.lines(Paths.get(args[0]))) {
 
             String finalWildCard = addWildCards(args[1]);
 
-            stream.filter(e -> isMatch(finalWildCard, e)).
-                    map(FullName::new).sorted().
-                    forEach(System.out::println);
+            classNameStream.filter(e -> isMatch(finalWildCard, e))
+                    .map(FullName::new)
+                    .sorted()
+                    .forEach(System.out::println);
 
-
-        } catch (Exception e) {
-            System.out.println("Wrong input: " + e.getMessage());
+        } catch (Exception exception) {
+            System.out.println("Wrong input: " + exception.getMessage());
         }
     }
 
-    static boolean isMatch(String finalPattern, String fileInput) {
-        if (finalPattern.endsWith(" ") && isMatchingPatternAndLastWord(finalPattern, fileInput)) {
+    static boolean isMatch(String finalPattern, String word) {
+        if (finalPattern.endsWith(" ") && checkIfLastWordIsMatch(finalPattern, word)) {
             return true;
         }
-        return isMatchingPattern(finalPattern, fileInput);
+        return isMatchingPattern(finalPattern, word);
     }
 
-    static boolean isMatchingPatternAndLastWord(String finalPattern, String inputWord) {
-        Pattern pattern = Pattern.compile(finalPattern.trim());
-        Matcher matcher = pattern.matcher(inputWord);
-        return matcher.find() && checkIfLastWordInMatch(finalPattern, inputWord);
-    }
 
     static boolean isMatchingPattern(String finalPattern, String inputWord) {
         Pattern pattern = Pattern.compile(finalPattern);
         Matcher matcher = pattern.matcher(inputWord);
+
         return matcher.find();
     }
 
-    static String[] splitPatternByCapitalLetters(String patternInput) {
-        String[] list = patternInput.toUpperCase().split("");
-        if (!isLowerCase(patternInput)) {
-            return patternInput.split("(?<=.)(?=\\p{Lu})"); //regex for splitting with capital letters
+    static String[] splitPatternByCapitalLetters(String pattern) {
+        String[] splitPatterns = pattern.toUpperCase().split("");
+        if (!isLowerCase(pattern)) {
+            return pattern.split("(?<=.)(?=\\p{Lu})"); //regex for splitting with capital letters
         }                                                         //FooBar -> ["Foo", "Bar"]
-        return list;
+        return splitPatterns;
     }
 
     static String addWildCards(String pattern) {
-        String placeHolder = pattern.replaceAll("[*]", ".");
+        String replacedWildCard = pattern.replaceAll("[*]", ".");
         StringBuilder stringBuilder = new StringBuilder();
-        String[] placeHolderArray = splitPatternByCapitalLetters(placeHolder);
+        String[] placeHolderArray = splitPatternByCapitalLetters(replacedWildCard);
+
         for (int i = 0; i < placeHolderArray.length; i++) {
             if (i != placeHolderArray.length - 1) {
                 stringBuilder.append(placeHolderArray[i]).append(".*");
@@ -68,16 +67,17 @@ public class ClassFinder {
         return stringBuilder.toString();
     }
 
-    static String fetchLastWordInPattern(String template) {
-        StringBuilder sb = new StringBuilder(template.trim());
-        String reverseStr = sb.reverse().toString();
-        for (char ch : reverseStr.toCharArray()) {
-            if (isUpperCase(ch)) {
-                return new StringBuilder(reverseStr.substring(0, reverseStr.indexOf(ch) + 1))
-                        .reverse().toString();
+    static String fetchLastWordInPattern(String word) {
+        StringBuilder stringBuilder = new StringBuilder(word.trim());
+        String reverseString = stringBuilder.reverse().toString();
+        for (char character : reverseString.toCharArray()) {
+            if (isUpperCase(character)) {
+                return new StringBuilder(reverseString.substring(0, reverseString.indexOf(character) + 1))
+                        .reverse()
+                        .toString();
             }
         }
-        return template;
+        return word;
     }
 
     static boolean isLowerCase(String template) {
@@ -89,9 +89,9 @@ public class ClassFinder {
         return true;
     }
 
-    static boolean checkIfLastWordInMatch(String finalRegex, String input) {
+    static boolean checkIfLastWordIsMatch(String finalPattern, String input) {
         String lastWord = fetchLastWordInPattern(input);
-        String[] splitPattern = splitPatternByCapitalLetters(finalRegex.trim());
+        String[] splitPattern = splitPatternByCapitalLetters(finalPattern.trim());
         return lastWord.contains(splitPattern[splitPattern.length - 1]);
     }
 }
