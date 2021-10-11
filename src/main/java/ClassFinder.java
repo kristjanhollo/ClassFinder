@@ -18,6 +18,10 @@ public class ClassFinder {
             System.exit(0);
         }
 
+        printMatches(args);
+    }
+
+    static void printMatches(String[] args) {
         try (Stream<String> classNameStream = Files.lines(Paths.get(args[0]))) {
 
             String finalWildCard = addWildCards(args[1]);
