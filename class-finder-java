@@ -2,4 +2,4 @@
 javac src/main/java/ClassFinder.java src/main/java/util/FullName.java
 java -cp src/main/java ClassFinder "$@" 
 rm src/main/java/ClassFinder.class
-
+rm src/main/java/util/FullName.class
