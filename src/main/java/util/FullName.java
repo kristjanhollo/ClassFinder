@@ -6,13 +6,13 @@ public class FullName implements Comparable<FullName> {
 
 
     public FullName(String fullClassName) {
-        int indexOfLastDOt = fullClassName.lastIndexOf(".");
-        if (indexOfLastDOt == -1) {
+        int indexOfLastDot = fullClassName.lastIndexOf(".");
+        if (indexOfLastDot == -1) {
             packageName = "";
             className = fullClassName;
         } else {
-            packageName = fullClassName.substring(0, indexOfLastDOt);
-            className = fullClassName.substring(indexOfLastDOt + 1);
+            packageName = fullClassName.substring(0, indexOfLastDot);
+            className = fullClassName.substring(indexOfLastDot + 1);
         }
     }
 
