@@ -1,20 +1,19 @@
 
-import util.FullName;
-
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import java.util.stream.Stream;
+import util.FullName;
 
 import static java.lang.Character.isUpperCase;
 
 public class ClassFinder {
     public static void main(String... args) {
 
-        if(args[1].startsWith(" ") || args[1].length() == 0) {
-            System.out.println("./class-finder <filename> '<pattern>'");
+        if (args.length <= 1 || args[1].startsWith(" ")) {
+            System.out.println("Error! '<pattern>' is needed for search");
             System.exit(0);
         }
 
@@ -24,58 +23,57 @@ public class ClassFinder {
     static void printMatches(String[] args) {
         try (Stream<String> classNameStream = Files.lines(Paths.get(args[0]))) {
 
-            String finalWildCard = addWildCards(args[1]);
+            String patternWithWildCard = replaceWildCards(args[1]);
 
-            classNameStream.filter(e -> isMatch(finalWildCard, e))
+            classNameStream.filter(className -> isMatch(patternWithWildCard, className))
                     .map(FullName::new)
                     .sorted()
                     .forEach(System.out::println);
 
-        } catch (Exception exception) {
+        } catch (IOException exception) {
             System.out.println("./class-finder <filename> '<pattern>'");
         }
     }
 
-    static boolean isMatch(String finalPattern, String word) {
-        if (finalPattern.endsWith(" ") && checkIfLastWordIsMatch(finalPattern, word)) {
-            return true;
-        }
-        return isMatchingPattern(finalPattern, word);
-    }
-
-
-    static boolean isMatchingPattern(String finalPattern, String inputWord) {
-        Pattern pattern = Pattern.compile(finalPattern);
-        Matcher matcher = pattern.matcher(inputWord);
-
-        return matcher.find();
-    }
-
-    static String[] splitPatternByCapitalLetters(String pattern) {
-        String[] splitPatterns = pattern.toUpperCase().split("");
-        if (!isLowerCase(pattern)) {
-            return pattern.split("(?<=.)(?=\\p{Lu})"); //regex for splitting with capital letters
-        }                                                         //FooBar -> ["Foo", "Bar"]
-        return splitPatterns;
-    }
-
-    static String addWildCards(String pattern) {
-        String replacedWildCard = pattern.replaceAll("[*]", ".");
+    static String replaceWildCards(String pattern) {
         StringBuilder stringBuilder = new StringBuilder();
-        String[] placeHolderArray = splitPatternByCapitalLetters(replacedWildCard);
+        String patternWithWildCard = pattern.replaceAll("[*]", ".");
+        String[] splitPattern = splitByCapitalLetters(patternWithWildCard);
 
-        for (int i = 0; i < placeHolderArray.length; i++) {
-            if (i != placeHolderArray.length - 1) {
-                stringBuilder.append(placeHolderArray[i]).append(".*");
+        for (int i = 0; i < splitPattern.length; i++) {
+            if (i != splitPattern.length - 1) {
+                stringBuilder.append(splitPattern[i]).append(".*");
             } else {
-                stringBuilder.append(placeHolderArray[i]);
+                stringBuilder.append(splitPattern[i]);
             }
         }
         return stringBuilder.toString();
     }
 
-    static String fetchLastWordInPattern(String word) {
-        StringBuilder stringBuilder = new StringBuilder(word.trim());
+    static String[] splitByCapitalLetters(String pattern) {
+        if (isAllInLowerCase(pattern)) {
+            return pattern.toUpperCase().split("");
+        }
+        // regex for splitting with capital letters
+        // FooBar -> ["Foo", "Bar"]
+        return pattern.split("(?<=.)(?=\\p{Lu})");
+    }
+
+    static boolean isMatch(String patternWithWildCard, String className) {
+        if (patternWithWildCard.endsWith(" ") && isLastWordMatch(patternWithWildCard, className)) {
+            return isMatchingPattern(patternWithWildCard.trim(), className);
+        }
+        return isMatchingPattern(patternWithWildCard, className);
+    }
+
+    static boolean isLastWordMatch(String pattern, String className) {
+        String lastWord = fetchLastWordOf(className);
+        String[] splitPattern = splitByCapitalLetters(pattern.trim());
+        return lastWord.contains(splitPattern[splitPattern.length - 1]);
+    }
+
+    static String fetchLastWordOf(String text) {
+        StringBuilder stringBuilder = new StringBuilder(text.trim());
         String reverseString = stringBuilder.reverse().toString();
         for (char character : reverseString.toCharArray()) {
             if (isUpperCase(character)) {
@@ -84,22 +82,24 @@ public class ClassFinder {
                         .toString();
             }
         }
-        return word;
+        return text;
     }
 
-    static boolean isLowerCase(String word) {
+    static boolean isMatchingPattern(String finalPattern, String inputWord) {
+        Pattern pattern = Pattern.compile(finalPattern);
+        Matcher matcher = pattern.matcher(inputWord);
+
+        return matcher.find();
+    }
+
+    static boolean isAllInLowerCase(String word) {
         for (char character : word.toCharArray()) {
-            if (!Character.isLowerCase(character)) {
+            if (Character.isUpperCase(character)) {
                 return false;
             }
         }
         return true;
     }
 
-    static boolean checkIfLastWordIsMatch(String finalPattern, String input) {
-        String lastWord = fetchLastWordInPattern(input);
-        String[] splitPattern = splitPatternByCapitalLetters(finalPattern.trim());
-        return lastWord.contains(splitPattern[splitPattern.length - 1]);
-    }
-}
 
+}
